@@ -18,26 +18,42 @@ public_users.get('/',function (req, res) {
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
   let isbn = req.params.isbn;
-  res.send(books[isbn]);
+  if (books[isbn]) {
+    res.send(JSON.stringify(books[isbn])+"\n");
+  } else {
+    res.send(`No book found for ISBN ${isbn}\n`);
+  }
  });
   
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
   let booksByAuthor = {};
 
-  books.array.forEach(element => {
-    if (element.author == req.params.author) {
-        booksByAuthor.push(element);
+  Object.keys(books).forEach((k) => {
+    if (books[k].author === req.params.author) {
+        booksByAuthor[k] = books[k];
     }
   });
 
-  return booksByAuthor;
+  if (booksByAuthor) {
+    res.send(JSON.stringify(booksByAuthor)+"\n");
+  } else {
+    res.send(`No book found for author ${author}\n`);
+  }
+  
 });
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  let booksByTitle = {};
+
+  Object.keys(books).forEach((k) => {
+    if (books[k].title === req.params.title) {
+        booksByTitle[k] = books[k];
+    }
+  });
+
+  res.send(booksByTitle);
 });
 
 //  Get book review
