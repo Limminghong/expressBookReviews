@@ -1,5 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const session = require('express-session');
 let books = require("./booksdb.js");
 const regd_users = express.Router();
 
@@ -33,8 +34,8 @@ const authenticatedUser = (username,password)=>{ //returns boolean
 
 //only registered users can login
 regd_users.post("/login", (req,res) => {
-    const username = req.query.username;
-    const password = req.query.password;
+    const username = req.body.username;
+    const password = req.body.password;
     
     // Check if username or password is missing
     if (!username || !password) {
@@ -49,7 +50,13 @@ regd_users.post("/login", (req,res) => {
         // Store access token and username in session
         req.session.authorization = {
             accessToken, username
-        }
+        };
+        console.log(accessToken);
+        req.session.save((err) => {
+            if (err) {
+                return res.status(500).json({ message: "Internal server error" });
+            }
+        });
         return res.status(200).send("User successfully logged in");
     } else {
         return res.status(208).json({ message: "Invalid Login. Check username and password" });
@@ -61,7 +68,7 @@ regd_users.post("/login", (req,res) => {
 regd_users.put("/auth/review/:isbn", (req, res) => {
     //Write your code here
     const isbn = req.params.isbn;
-    const review = req.query.review;
+    const review = req.body.review;
     console.log(req.session.authorization["username"]);
     books[isbn].reviews[req.session.authorization["username"]] = review;
     return res
