@@ -26,40 +26,63 @@ public_users.post("/register", (req,res) => {
 
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
-  res.send(JSON.stringify(books,null,4));
+    let promise = new Promise((resolve, reject) => {
+        setTimeout(() => resolve(books), 600);
+    });
+
+    promise.then((result) => {
+        return res.status(200).json({ books: result });
+    });
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
-    let isbn = req.params.isbn;
-    if (books[isbn]) {
-        res.send(JSON.stringify(books[isbn])+"\n");
+public_users.get('/isbn/:isbn', async function (req, res) {
+    let promise = new Promise((resolve, reject) => {
+        setTimeout(() => resolve(books[req.params.isbn]), 600);
+    });
+
+    let book = await promise;
+
+    if (book) {
+        res.send(JSON.stringify(book)+"\n");
     } else {
         res.send(`No book found for ISBN ${isbn}\n`);
     }
     });
   
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
+public_users.get('/author/:author', async function (req, res) {
     let author = req.params.author;
-    let booksList=Object.values(books)
-    let book = booksList.find(b => b.author===author);
+    let promise = new Promise ((resolve, reject) => {
+        setTimeout(() => {
+            let findBook=Object.values(books).find(b => b.author===author);
+            resolve(findBook);
+        }, 600);
+    });
 
-    if (book) {
-        let bookDetails = JSON.stringify(book);
+    let findBook = await promise;
+
+    if (findBook) {
+        let bookDetails = JSON.stringify(findBook);
         res.send(bookDetails + "\n");
     } else {
         res.send(`No book found for author ${author}`) + "\n";}
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
+public_users.get('/title/:title', async function (req, res) {
     let title = req.params.title;
-    let booksList=Object.values(books)
-    let book = booksList.find(b => b.title===title);
+    let promise = new Promise ((resolve, reject) => {
+        setTimeout(() => {
+            let findBook=Object.values(books).find(b => b.title===title);
+            resolve(findBook);
+        }, 600);
+    });
 
-    if (book) {
-        let bookDetails = JSON.stringify(book);
+    let findBook = await promise;
+
+    if (findBook) {
+        let bookDetails = JSON.stringify(findBook);
         res.send(bookDetails + "\n");
     } else {
         res.send(`No book found for title ${title}`) + "\n";}
