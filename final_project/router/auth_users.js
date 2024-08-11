@@ -1,6 +1,5 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const session = require('express-session');
 let books = require("./booksdb.js");
 const regd_users = express.Router();
 
@@ -49,14 +48,8 @@ regd_users.post("/login", (req,res) => {
         }, 'access', { expiresIn: 60 * 60 });
         // Store access token and username in session
         req.session.authorization = {
-            accessToken, username
+            accessToken, username,
         };
-        console.log(accessToken);
-        req.session.save((err) => {
-            if (err) {
-                return res.status(500).json({ message: "Internal server error" });
-            }
-        });
         return res.status(200).send("User successfully logged in");
     } else {
         return res.status(208).json({ message: "Invalid Login. Check username and password" });
@@ -66,14 +59,31 @@ regd_users.post("/login", (req,res) => {
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
+
+    const isbn = req.params.isbn;
+    let filtered_book = books[isbn]
+    if (filtered_book) {
+        let review = req.body.review;
+        let reviewer = req.session.authorization['username'];
+        if(review) {
+            filtered_book['reviews'][reviewer] = review;
+            books[isbn] = filtered_book;
+        }
+        res.send(`The review for the book with ISBN  ${isbn} has been added/updated.`);
+    }
+    else{
+        res.send("Unable to find this ISBN!");
+    }
+});
+
+regd_users.delete("/auth/review/:isbn", (req, res) => {
     //Write your code here
     const isbn = req.params.isbn;
-    const review = req.body.review;
-    console.log(req.session.authorization["username"]);
-    books[isbn].reviews[req.session.authorization["username"]] = review;
+
+    delete books[isbn].reviews[req.session.authorization["username"]];
     return res
         .status(200)
-        .json({ message: "review succeed", reviews: books[isbn].reviews });
+        .json({ message: "review deleted", reviews: books[isbn].reviews });
 });
 
 module.exports.authenticated = regd_users;
